@@ -1,5 +1,5 @@
 @extends('layouts.typical', [
-    'lastChangedDate' => '2022-04-29',
+    'lastChangedDate' => '2022-05-05',
     'shortLinks' => [],
     'allowOnlyContent' => false,
     'githubRepo' => 'jkoop/audio-format-compare',
@@ -17,74 +17,74 @@
     }
 </style>
 
-<form method="post" enctype="multipart/form-data">
-    @csrf
-    Audio file (max: 2MB, will clip to 30 seconds)
-    <input type="file" name="file" id="file" accept="audio/aac,audio/m4a,audio/mp3,audio/ogg,audio/opus" required />
-    <button>Upload</button>
+<form>
+    Example audio:
+
+    <select name="file" onchange="$(this).closest('form').submit()">
+        <option></option>
+        <option value="toms-diner" {{ request('file') == 'toms-diner' ? 'selected' : '' }}>Tom's Diner</option>
+        <option value="toms-diner-dna-remix" {{ request('file') == 'toms-diner-dna-remix' ? 'selected' : '' }}>Tom's Diner (DNA Remix)</option>
+        <option value="chiptune-3" {{ request('file') == 'chiptune-3' ? 'selected' : '' }}>chiptune 3</option>
+    </select>
+
+    @switch(request('file'))
+        @case('toms-diner')
+            <a target="_blank" href="https://youtu.be/gi02zwXg6wo">YouTube</a>
+            @break
+        @case('toms-diner-dna-remix')
+            <a target="_blank" href="https://youtu.be/bJNxmMk8zvA">YouTube</a>
+            @break
+        @case('chiptune-3')
+            <a target="_blank" href="https://modarchive.org/module.php?166571">ModArchive</a>
+            @break
+    @endswitch
 </form>
 
-@if (isset($filehash))
-    <p class="hidden audio"><audio class="aac-12" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_12k.aac" type="audio/aac" /></audio> 12 kbps aac</p>
-    <p class="hidden audio"><audio class="aac-16" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_16k.aac" type="audio/aac" /></audio> 16 kbps aac</p>
-    <p class="hidden audio"><audio class="aac-24" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_24k.aac" type="audio/aac" /></audio> 24 kbps aac</p>
-    <p class="hidden audio"><audio class="aac-32" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_32k.aac" type="audio/aac" /></audio> 32 kbps aac</p>
-    <p class="hidden audio"><audio class="aac-48" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_48k.aac" type="audio/aac" /></audio> 48 kbps aac</p>
-    <p class="hidden audio"><audio class="aac-64" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_64k.aac" type="audio/aac" /></audio> 64 kbps aac</p>
-    <p class="hidden audio"><audio class="mp3-32" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_32k.mp3" type="audio/mp3" /></audio> 32 kbps mp3</p>
-    <p class="hidden audio"><audio class="mp3-48" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_48k.mp3" type="audio/mp3" /></audio> 48 kbps mp3</p>
-    <p class="hidden audio"><audio class="mp3-64" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_64k.mp3" type="audio/mp3" /></audio> 64 kbps mp3</p>
-    <p class="hidden audio"><audio class="ogg-48" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_48k.ogg" type="audio/ogg" /></audio> 48 kbps ogg</p>
-    <p class="hidden audio"><audio class="ogg-64" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_64k.ogg" type="audio/ogg" /></audio> 64 kbps ogg</p>
-    <p class="hidden audio"><audio class="opus-8" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_8k.opus" type="audio/ogg" /></audio> 8 kbps opus</p>
-    <p class="hidden audio"><audio class="opus-12" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_12k.opus" type="audio/ogg" /></audio> 12 kbps opus</p>
-    <p class="hidden audio"><audio class="opus-16" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_16k.opus" type="audio/ogg" /></audio> 16 kbps opus</p>
-    <p class="hidden audio"><audio class="opus-24" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_24k.opus" type="audio/ogg" /></audio> 24 kbps opus</p>
-    <p class="hidden audio"><audio class="opus-32" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_32k.opus" type="audio/ogg" /></audio> 32 kbps opus</p>
-    <p class="hidden audio"><audio class="opus-48" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_48k.opus" type="audio/ogg" /></audio> 48 kbps opus</p>
-    <p class="hidden audio"><audio class="opus-64" controls loop preload="auto"><source src="/storage/audio-uploads/{{ $filehash }}_64k.opus" type="audio/ogg" /></audio> 64 kbps opus</p>
+{{-- <form method="post" enctype="multipart/form-data">
+    @csrf
+    Audio file (max: 2MB, will clip to 30 seconds)
+    <input type="file" name="file" id="file" accept="audio/mpeg,audio/mpga,audio/mp3,audio/aac,audio/m4a,audio/wav,audio/flac,audio/ogg,audio/opus,audio/x-mod" required />
+    <button>Upload</button>
+</form> --}}
+
+@if (request('file'))
+    @php
+        // Laravel Docker local environment doesn't support HTTP Keep-Alive
+        // so we need to use another web server with our folder to get the file
+        $pathPrefix = env('APP_ENV') == 'local' ? env('LOCAL_PUBLIC') : '';
+
+        $pathFolder = file_exists(public_path() . '/audio/' . request('file') . '_64k.ogg') ? 'audio-format-compare/examples' : 'storage/audio-uploads';
+    @endphp
+
+    @foreach (\App\Http\Controllers\AudioFormatCompareController::BITRATES as $format => $bitrates)
+        @foreach ($bitrates as $bitrate)
+            <p class="hidden audio">
+                <audio class="{{ $format }}-{{ $bitrate }}" controls loop preload="auto">
+                    <source
+                        src="{{ $pathPrefix }}/{{ $pathFolder }}/{{ request('file') }}_{{ $bitrate }}k.{{ $format }}"
+                        type="audio/{{ str_replace('opus', 'ogg', $format) }}" />
+                </audio>
+                <span class="no-wrap">12 kbps aac</span>
+            </p>
+        @endforeach
+    @endforeach
 
     <table>
-        <tr>
-            <td>aac</td>
-            <td></td>
-            <td><button class="aac-12" onclick="changeTo('aac-12')">12kbps</button></td>
-            <td><button class="aac-16" onclick="changeTo('aac-16')">16kbps</button></td>
-            <td><button class="aac-24" onclick="changeTo('aac-24')">24kbps</button></td>
-            <td><button class="aac-32" onclick="changeTo('aac-32')">32kbps</button></td>
-            <td><button class="aac-48" onclick="changeTo('aac-48')">48kbps</button></td>
-            <td><button class="aac-64" onclick="changeTo('aac-64')">64kbps</button></td>
-        </tr>
-        <tr>
-            <td>mp3</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td><button class="mp3-32" onclick="changeTo('mp3-32')">32kbps</button></td>
-            <td><button class="mp3-48" onclick="changeTo('mp3-48')">48kbps</button></td>
-            <td><button class="mp3-64" onclick="changeTo('mp3-64')">64kbps</button></td>
-        </tr>
-        <tr>
-            <td>ogg</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td><button class="ogg-48" onclick="changeTo('ogg-48')">48kbps</button></td>
-            <td><button class="ogg-64" onclick="changeTo('ogg-64')">64kbps</button></td>
-        </tr>
-        <tr>
-            <td>opus</td>
-            <td><button class="opus-8" onclick="changeTo('opus-8')">8kbps</button></td>
-            <td><button class="opus-12" onclick="changeTo('opus-12')">12kbps</button></td>
-            <td><button class="opus-16" onclick="changeTo('opus-16')">16kbps</button></td>
-            <td><button class="opus-24" onclick="changeTo('opus-24')">24kbps</button></td>
-            <td><button class="opus-32" onclick="changeTo('opus-32')">32kbps</button></td>
-            <td><button class="opus-48" onclick="changeTo('opus-48')">48kbps</button></td>
-            <td><button class="opus-64" onclick="changeTo('opus-64')">64kbps</button></td>
-        </tr>
+        @foreach (\App\Http\Controllers\AudioFormatCompareController::BITRATES as $format => $bitrates)
+            <tr>
+                <td>{{ $format }}</td>
+
+                @foreach ([8, 12, 16, 24, 32, 48, 64] as $bitrate)
+                    @if (in_array($bitrate, $bitrates))
+                        <td><button class="{{ $format }}-{{ $bitrate }}" onclick="changeTo('{{ $format }}-{{ $bitrate }}')">
+                            {{ $bitrate }}kbps
+                        </button></td>
+                    @else
+                        <td></td>
+                    @endif
+                @endforeach
+            </tr>
+        @endforeach
     </table>
 
     <script>

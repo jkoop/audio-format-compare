@@ -6,55 +6,44 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class AudioFormatCompareController extends Controller {
+    const BITRATES = [
+        'aac' => [12, 16, 24, 32, 48, 64],
+        'mp3' => [32, 48, 64],
+        'ogg' => [48, 64],
+        'opus' => [8, 12, 16, 24, 32, 48, 64],
+    ];
+
     public function upload() {
+        abort(405);
+        return;
+
         request()->validate([
-            'file' => 'required|max:2000|mimes:audio/mpeg,mpga,mp3,aac,m4a,wav,ogg,opus,x-mod',
+            'file' => 'required|max:20000|mimetypes:audio/mpeg,audio/mpga,audio/mp3,audio/aac,audio/m4a,audio/wav,audio/flac,audio/ogg,audio/opus,audio/x-mod',
         ]);
 
         $file = request()->file('file');
-        $filehash = md5_file($file->getRealPath());
+        $fileHash = md5_file($file->getRealPath());
 
-        $uploadName = $filehash . '.' . $file->extension();
+        $uploadName = $fileHash . '.' . $file->extension();
         $uploadPath = '/storage/audio-uploads/' . $uploadName;
 
         Storage::putFileAs('public/audio-uploads', request()->file('file'), $uploadName);
 
         chdir(storage_path('app/public/audio-uploads'));
 
-        // $this->convertSound($uploadName, 'aac', 8000); // aac doesn't does support bitrates this low
-        $this->convertSound($uploadName, 'aac', 12000);
-        $this->convertSound($uploadName, 'aac', 16000);
-        $this->convertSound($uploadName, 'aac', 24000);
-        $this->convertSound($uploadName, 'aac', 32000);
-        $this->convertSound($uploadName, 'aac', 48000);
-        $this->convertSound($uploadName, 'aac', 64000);
-        // $this->convertSound($uploadName, 'mp3', 8000); // mp3 doesn't does support bitrates this low
-        // $this->convertSound($uploadName, 'mp3', 12000); // mp3 doesn't does support bitrates this low
-        // $this->convertSound($uploadName, 'mp3', 16000); // mp3 doesn't does support bitrates this low
-        // $this->convertSound($uploadName, 'mp3', 24000); // mp3 doesn't does support bitrates this low
-        $this->convertSound($uploadName, 'mp3', 32000);
-        $this->convertSound($uploadName, 'mp3', 48000);
-        $this->convertSound($uploadName, 'mp3', 64000);
-        // $this->convertSound($uploadName, 'ogg', 8000); // ogg doesn't does support bitrates this low
-        // $this->convertSound($uploadName, 'ogg', 12000); // ogg doesn't does support bitrates this low
-        // $this->convertSound($uploadName, 'ogg', 16000); // ogg doesn't does support bitrates this low
-        // $this->convertSound($uploadName, 'ogg', 24000); // ogg doesn't does support bitrates this low
-        // $this->convertSound($uploadName, 'ogg', 32000); // ogg doesn't does support bitrates this low
-        $this->convertSound($uploadName, 'ogg', 48000);
-        $this->convertSound($uploadName, 'ogg', 64000);
-        $this->convertSound($uploadName, 'opus', 8000);
-        $this->convertSound($uploadName, 'opus', 12000);
-        $this->convertSound($uploadName, 'opus', 16000);
-        $this->convertSound($uploadName, 'opus', 24000);
-        $this->convertSound($uploadName, 'opus', 32000);
-        $this->convertSound($uploadName, 'opus', 48000);
-        $this->convertSound($uploadName, 'opus', 64000);
+        foreach (self::BITRATES as $format => $bitrates) {
+            foreach ($bitrates as $bitrate) {
+                $this->convertSound($uploadName, $format, $bitrate * 1000);
+            }
+        }
 
-        return view('pages.project.audio-format-compare', compact('filehash'));
+        Storage::delete('public/audio-uploads/' . $uploadName);
+
+        return redirect(url()->current() . "?file=$fileHash");
     }
 
     private function convertSound(string $relativePath, string $extension, int $bitrate) {
         $outputPath = pathinfo($relativePath, PATHINFO_FILENAME) . '_' . ($bitrate / 1000) . 'k.' . $extension;
-        exec(sprintf('ffmpeg -n -i %s -vn -sn -b:a %d -to 0:30 %s', $relativePath, $bitrate, $outputPath));
+        exec(sprintf('nice -n 19 ffmpeg -n -i %s -vn -sn -b:a %d -t 0:30 %s', $relativePath, $bitrate, $outputPath));
     }
 }
