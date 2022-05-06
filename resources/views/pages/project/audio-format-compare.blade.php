@@ -53,7 +53,9 @@
         // so we need to use another web server with our folder to get the file
         $pathPrefix = env('APP_ENV') == 'local' ? env('LOCAL_PUBLIC') : '';
 
-        $pathFolder = file_exists(public_path() . '/audio/' . request('file') . '_64k.ogg') ? 'audio-format-compare/examples' : 'storage/audio-uploads';
+        $pathFolder = file_exists(public_path() . '/audio-format-compare/examples/' . request('file') . '_64k.ogg') ?
+            'audio-format-compare/examples' :
+            'storage/audio-uploads';
     @endphp
 
     @foreach (\App\Http\Controllers\AudioFormatCompareController::BITRATES as $format => $bitrates)
