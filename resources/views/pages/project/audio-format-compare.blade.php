@@ -1,6 +1,5 @@
 @extends('layouts.typical', [
     'lastChangedDate' => '2022-05-05',
-    'shortLinks' => [],
     'allowOnlyContent' => false,
     'githubRepo' => 'jkoop/audio-format-compare',
 ])
