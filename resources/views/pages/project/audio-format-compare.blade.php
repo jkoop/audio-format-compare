@@ -39,22 +39,11 @@
     @endswitch
 </form>
 
-{{-- <form method="post" enctype="multipart/form-data">
-    @csrf
-    Audio file (max: 2MB, will clip to 30 seconds)
-    <input type="file" name="file" id="file" accept="audio/mpeg,audio/mpga,audio/mp3,audio/aac,audio/m4a,audio/wav,audio/flac,audio/ogg,audio/opus,audio/x-mod" required />
-    <button>Upload</button>
-</form> --}}
-
 @if (request('file'))
     @php
         // Laravel Docker local environment doesn't support HTTP Keep-Alive
         // so we need to use another web server with our folder to get the file
         $pathPrefix = env('APP_ENV') == 'local' ? env('LOCAL_PUBLIC') : '';
-
-        $pathFolder = file_exists(public_path() . '/audio-format-compare/examples/' . request('file') . '_64k.ogg') ?
-            'audio-format-compare/examples' :
-            'storage/audio-uploads';
     @endphp
 
     @foreach (\App\Http\Controllers\AudioFormatCompareController::BITRATES as $format => $bitrates)
@@ -62,7 +51,7 @@
             <p class="hidden audio">
                 <audio class="{{ $format }}-{{ $bitrate }}" controls loop preload="auto">
                     <source
-                        src="{{ $pathPrefix }}/{{ $pathFolder }}/{{ request('file') }}_{{ $bitrate }}k.{{ $format }}"
+                        src="{{ $pathPrefix }}/audio/audio-format-compare/{{ request('file') }}_{{ $bitrate }}k.{{ $format }}"
                         type="audio/{{ str_replace('opus', 'ogg', $format) }}" />
                 </audio>
                 <span class="no-wrap">12 kbps aac</span>
