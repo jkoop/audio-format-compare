@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en-ca">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="compare audio formats and bitrates">
+
+    <title>Audio Format Compare</title>
+
+    <link href="/favicon.svg" rel="icon" />
+    <link href="/favicon.png" rel="icon" />
+    <link href="/favicon.ico" rel="icon" />
+    <!-- link href="style.css" rel="stylesheet" / -->
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <h1>Audio Format Compare</h1>
+
+    <form>
+		Example audio:
+
+		<select name="file" onchange="changeSong(this)">
+			<option value="toms-diner">Tom's Diner</option>
+			<option value="toms-diner-dna-remix">Tom's Diner (DNA Remix)</option>
+			<option value="chiptune-3">chiptune 3</option>
+		</select>
+
+		<a target="_blank" class="source" id="toms-diner" href="https://youtu.be/gi02zwXg6wo">YouTube</a>
+		<a target="_blank" class="source" id="toms-diner-dna-remix" href="https://youtu.be/bJNxmMk8zvA">YouTube</a>
+		<a target="_blank" class="source" id="chiptune-3" href="https://modarchive.org/module.php?166571">ModArchive</a>
+	</form>
+
+	<noscript>JavaScript is required to render this page.</noscript>
+
+	<div id="players"></div>
+	<table id="buttons"></table>
+
+    <hr>
+    <p><i>
+        This page last changed Feb 12 2023; created May 02 2022;
+        <a target="_blank" href="https://github.com/jkoop/audio-format-compare">source on GitHub</a>;
+    </i></p>
+</body>
+
+</html>
